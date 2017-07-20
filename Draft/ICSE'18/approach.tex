@@ -3,7 +3,7 @@
 \subsection{Formalization}
 \label{sec:formalization}
 
-Let $S$ be a set of stable bug fixing patches and $P$ a set of all bug fixing patches in Linux kernel. We call $U \in (S \cap P ) $ is a set of unknown bug fixing. In our problem, we try to provide a bug fixing patches ranking $\subset P^2$ for a developer, where each bug fixing patch has to meet the following properties:
+Let $S$ be a set of stable bug fixing patches and $P$ a set of all bug fixing patches in Linux kernel. We call $U \in (S \cap P ) $ is a set of unknown bug fixing. In our problem, we try to provide a bug fixing patches ranking $\subset P^2$ for a developer, where each bug fixing patch has to meet the following properties~\cite{rendle2009bpr}:
 \begin{itemize}
 	\item \textit{Totality:} $\forall i,j \in P: i \neq j \Rightarrow (i > j) \vee (j > i)$
 	\item \textit{Antisymmetry:} $\forall i,j \in P: (i > j) \wedge (j > i) \Rightarrow i = j$ 
@@ -14,7 +14,7 @@ Let $S$ be a set of stable bug fixing patches and $P$ a set of all bug fixing pa
 \label{sec:bugranking}
 \begin{figure*}[t!]
 	\centering
-	\includegraphics[width=1.0\textwidth]{BugPatchingRanking-cropped.pdf}
+	\includegraphics[width=1.0\textwidth]{BugPatchingRanking_v2-cropped.pdf}
 	\caption{An architecture of bug fixing patches ranking model in Linux kernel.}
 	\label{fig:bugranking}
 \end{figure*}
@@ -40,17 +40,18 @@ In Linux kernel, each patch contains both a textual commit message and commit co
 Our model is trained by minimizing the cross-entropy lost function: 
 \begin{equation}
 \begin{split}
-	\mathcal{L} &= -\text{log}\prod^N_{i,j  \in \text{P}}p(y_{ij}|p_i,p_j) + \lambda \lVert \theta \lVert^2_2 \\ &= -\sum_{i, j \in \text{P}}^{N} [y_{ij} * \text{log \textbf{a}}_{ij} + (1 - y_{ij}) * \text{log}(1 - \text{\textbf{a}}_{ij})] + \lambda \lVert \theta \lVert^2_2
+	\mathcal{L} &= -\text{log}\prod^\text{N}_{i \in S,j \in U}p(y_{ij}|p_i,p_j) + \lambda \lVert \theta \lVert^2_2 \\ &= -\sum_{i \in S,j \in U}^\text{N} \text{log } \sigma (\textbf{a}_{ij}) + \lambda \lVert \theta \lVert^2_2
 \end{split}
 \end{equation}
-where $N$ is the total number pairs of bug fixing patches, $y_{ij} \in \{0, 1\}$ determines a rank order between two pair of patch $p_i$ and $p_j$. $\text{\textbf{a}}_{ij}$ is the output of our ranking model and can be decomposed as:
+where $S$ and $U$ are the stable and unknown bug fixing patches datasets respectively, $y_{ij} = 1$ since $p_i$ has higher rank compared to $p_j$, N is the total number pairs of bug fixing patches in $S$ and $U$, $\sigma(.)$ represents the logistic function to identify the rank order of patches pair. $\text{\textbf{a}}_{ij}$ is the output of our ranking model and can be decomposed as:
 \begin{equation}
 \begin{split}
-\text{\textbf{a}}_{ij} & = \sigma(\text{\textbf{a}}_i - \text{\textbf{a}}_{j}) \\
-& = \sigma (\text{\textbf{mean}}(\tilde{x}_{p_i}) - \text{\textbf{mean}}(\tilde{x}_{p_j}))
+\text{\textbf{a}}_{ij} & = \text{\textbf{a}}_i - \text{\textbf{a}}_{j} \\
+% & = \sigma (\text{\textbf{mean}}(\tilde{x}_{p_i}) - \text{\textbf{mean}}(\tilde{x}_{p_j}))
 \end{split}
 \end{equation}
-to satisfy the properties mentioned in Sec.~\ref{sec:formalization}. $\sigma(.)$ represents the logistic function to identify the rank order of patches pair. $\tilde{x}_{p_i}$ and $\tilde{x}_{p_j}$ are the feature representations of two patches $p_i$ and $p_j$ respectively (see Fig.~\ref{fig:bugranking}). \textbf{mean}$(.)$ returns the mean of vector elements of each feature representation. 
+to satisfy the properties mentioned in Sec.~\ref{sec:formalization}. 
+%. $\tilde{x}_{p_i}$ and $\tilde{x}_{p_j}$ are the feature representations of two patches $p_i$ and $p_j$ respectively (see Fig.~\ref{fig:bugranking}). \textbf{mean}$(.)$ returns the mean of vector elements of each feature representation. 
 
 \subsection{Regularization}
 \label{sec:regularization}
