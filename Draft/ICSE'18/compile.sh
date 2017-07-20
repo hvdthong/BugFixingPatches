@@ -1,2 +1,2 @@
-bibtex sample-sigconf
-pdflatex sample-sigconf
+bibtex main
+pdflatex main
