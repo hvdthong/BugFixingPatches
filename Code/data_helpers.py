@@ -24,7 +24,6 @@ def clean_str(string):
 
 
 def seperate_text_code(data):
-    i = 0
     x_text, x_code = [], []
     for v in data:
         v_split = v.split('&&')
@@ -55,6 +54,15 @@ def load_data_and_labels(positive_data_file, negative_data_file):
     return x_text, x_code, y
 
 
+def load_data_text_and_code(file):
+    examples = list(open(file, "r").readlines())
+    examples = [s.strip() for s in examples]
+    examples = [clean_str(sent) for sent in examples]
+    x_text, x_code = seperate_text_code(examples)
+    x_text, x_code = [clean_str(sent) for sent in x_text], [clean_str(sent) for sent in x_code]
+    return x_text, x_code
+
+
 def load_data_all(data_file):
     # Load data from files
     examples = list(open(data_file, "r").readlines())
@@ -62,3 +70,45 @@ def load_data_all(data_file):
     examples = [clean_str(sent) for sent in examples]
     return examples
 
+
+def load_data_text_all(data_file):
+    # Load data from files
+    examples = list(open(data_file, "r").readlines())
+    examples = [s.strip() for s in examples]
+    x_text, x_code = seperate_text_code(examples)
+    x_text = [clean_str(sent) for sent in x_text]
+    return x_text
+
+
+def data_size(data_file):
+    # return data size
+    examples = list(open(data_file, "r").readlines())
+    examples = [s.strip() for s in examples]
+    return len(examples)
+
+
+def batch_iter(text_pos, code_pos, text_neg, code_neg, batch_size, shuffle=True):
+    """
+    Generates a batch iterator for a dataset.
+    """
+    if shuffle:
+        index_pos, index_neg = np.random.choice(len(text_pos), batch_size), np.random.choice(len(text_neg), batch_size)
+        return text_pos[index_pos], code_pos[index_pos], text_neg[index_neg], code_neg[index_neg]
+    else:
+        print 'We need to randomly choose instances'
+        exit()
+
+        # data_pos = np.array(data_pos)
+        # data_size = len(data)
+        # num_batches_per_epoch = int((len(data)-1)/batch_size) + 1
+        # for epoch in range(num_iters):
+        #     # Shuffle the data at each epoch
+        #     if shuffle:
+        #         shuffle_indices = np.random.permutation(np.arange(data_size))
+        #         shuffled_data = data[shuffle_indices]
+        #     else:
+        #         shuffled_data = data
+        #     for batch_num in range(num_batches_per_epoch):
+        #         start_index = batch_num * batch_size
+        #         end_index = min((batch_num + 1) * batch_size, data_size)
+        #         yield shuffled_data[start_index:end_index]
