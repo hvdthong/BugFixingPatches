@@ -40,10 +40,12 @@ def merging_ids(file_labels, train_labels, name_pos, name_neg):
     ids_train = [e.strip().split(":")[1] for e in train]
     label_train = [e.strip().split(":")[0] for e in train]
 
-    ids, labels = ids_file + ids_train, label_file + label_train
+    pos_train = [l + ":" + i for i, l in zip(ids_train, label_train) if int(l) == 1]
+    neg_train = [l + ":" + i for i, l in zip(ids_train, label_train) if int(l) == 0]
 
-    pos_ = [l + ":" + i for i, l in zip(ids, labels) if int(l) == 1]
-    neg_ = [l + ":" + i for i, l in zip(ids, labels) if int(l) == 0]
+    # make negative label
+    neg_file = ["0" + ":" + i for i in ids_file]
+    pos_, neg_ = pos_train, neg_train + neg_file
 
     with open(name_pos, "w") as pos_file, open(name_neg, 'w')as neg_file:
         [pos_file.write(p.strip() + '\n') for p in pos_]
@@ -80,19 +82,20 @@ def making_data(file_id, all_patches, file_name):
     with open(file_name, "w") as file_:
         [file_.write(c.strip() + '\n') for c in commits_overlap]
 
-
-# tf.flags.DEFINE_string("file_labels", "./data/id_testlabel.txt",
-#                        "List of all bug fixing patches ids including ground truth label (labeled by human)")
-# tf.flags.DEFINE_string("train_labels", "./data/consistId_noeq.txt",
-#                        "List of all bug fixing patches ids using for training ranking model")
-# FLAGS = tf.flags.FLAGS
-# FLAGS._parse_flags()
-# print("\nParameters:")
-# for attr, value in sorted(FLAGS.__flags.items()):
-#     print("{}={}".format(attr.upper(), value))
-# print("")
-# merging_ids(file_labels=FLAGS.file_labels, train_labels=FLAGS.train_labels, name_pos="./data/all_ids.pos",
-#             name_neg="./data/all_ids.neg")
+###################################################################################################
+###################################################################################################
+tf.flags.DEFINE_string("file_labels", "./data/id_testlabel.txt",
+                       "List of all bug fixing patches ids including ground truth label (labeled by human)")
+tf.flags.DEFINE_string("train_labels", "./data/consistId_noeq.txt",
+                       "List of all bug fixing patches ids using for training ranking model")
+FLAGS = tf.flags.FLAGS
+FLAGS._parse_flags()
+print("\nParameters:")
+for attr, value in sorted(FLAGS.__flags.items()):
+    print("{}={}".format(attr.upper(), value))
+print("")
+merging_ids(file_labels=FLAGS.file_labels, train_labels=FLAGS.train_labels, name_pos="./data/all_ids.pos",
+            name_neg="./data/all_ids.neg")
 
 
 ###################################################################################################

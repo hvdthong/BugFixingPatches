@@ -2,7 +2,6 @@ import tensorflow as tf
 import data_helpers
 from tensorflow.contrib import learn
 import numpy as np
-from cnn_patch import CNNPatch
 from cnn_patch_update import CNNPatchUpdate
 import os
 import time
