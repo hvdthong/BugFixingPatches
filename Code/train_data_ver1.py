@@ -10,8 +10,16 @@ import datetime
 # Parameters
 # ==================================================
 # Data loading params
-tf.flags.DEFINE_string("positive_data_file", "./data/train.pos", "Data source for the positive data.")
-tf.flags.DEFINE_string("negative_data_file", "./data/train.neg", "Data source for the negative data.")
+tf.flags.DEFINE_string("train_pos_data", "./data_ver1/eq100_line_aug1.pos.contain"
+                       , "Data source for the positive training data")
+tf.flags.DEFINE_string("train_neg_data", "./data_ver1/eq100_line_aug1.neg.contain"
+                       , "Data source for the negative training data")
+tf.flags.DEFINE_string("test_data", "./data_ver1/extra100_line_aug1.neg.contain"
+                       , "Data source for the testing data, only contain negative bug fixing patches")
+tf.flags.DEFINE_string("label_pos_data", "./data_ver1/lbd100_line_aug1.pos.contain"
+                       , "Data source for the positive patches for testing data")
+tf.flags.DEFINE_string("label_neg_data", "./data_ver1/eq100_line_aug1.neg.contain"
+                       , "Data source for the negative patches for testing data")
 tf.flags.DEFINE_integer("seed", 10, "Random seed (default:123)")
 # Model Hyperparameters
 tf.flags.DEFINE_integer("embedding_dim_text", 128, "Dimensionality of character embedding for text (default: 128)")
@@ -43,6 +51,9 @@ print("")
 # Data Preparation
 # ==================================================
 # Load data
+
+exit()
+
 print("Loading data...")
 x_text, x_code, y = data_helpers.load_data_and_labels(FLAGS.positive_data_file, FLAGS.negative_data_file)
 length_pos = data_helpers.data_size(FLAGS.positive_data_file)
