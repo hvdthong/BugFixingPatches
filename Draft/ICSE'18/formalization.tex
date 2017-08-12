@@ -8,6 +8,8 @@ Let $S$ be a set of stable bug fixing patches and $P$ a set of all bug fixing pa
 	\item \textit{Transitivity:} $\forall i,j,k \in P: (i > j) \vee (j > k) \Rightarrow i > k$ 
 \end{itemize}
 
+In bug fixing patches ranking system, only stable bug fixing patches (BFP) are observed. The remaining patches is a mixture of actually non-stable BFP and missing stable BFP. The most common approach for dealing with the missing stable BFP problem is to consider them as non-stable BFP. However, traditional machine learning models~\cite{bishop2006pattern} are unable to learn anything since they cannot distinguish between the non-stable and stable BFP anymore. 
+
 \subsection{Bug Fixing Patch Ranking}
 \label{sec:bugranking}
 \begin{figure*}[t!]
