@@ -75,6 +75,7 @@ for filter_size in filter_sizes:
     pooled_outputs.append(pooled)
 h_pool_ = tf.reshape(tf.concat(pooled_outputs, 4), [-1, 10 * len(filter_sizes)])
 
+
 if __name__ == "__main__":
     sents = ["i love deep learning", "it is a great course"]
     sents_1 = ["i love book", "book is great", "reading"]
