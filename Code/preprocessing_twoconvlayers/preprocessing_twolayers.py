@@ -47,6 +47,11 @@ def commit_one_file_commit_code(ids, fs, make_file):
 
 
 ################################################################
+def write_file(new_file, info):
+    with open(new_file, "w") as file_:
+        [file_.write(str(c) + '\n') for c in info]
+
+
 def extract_code_filename(commit_code):
     for i, c in enumerate(commit_code):
         if c.startswith("file"):
@@ -63,6 +68,16 @@ def extract_code_addedcode(commit_code):
     return added_code
 
 
+def extract_code_removedcode(commit_code):
+    removed_code = []
+    for i, c in enumerate(commit_code):
+        if not c.startswith("file"):
+            if "-" in c:
+                type_code = c.strip().split(":")[2].strip()
+                removed_code.append("<" + type_code + ">," + c.strip().split(" ")[3])
+    return removed_code
+
+
 def extract_code_info(commit_code):
     name = extract_code_filename(commit_code)
     return name
@@ -73,27 +88,51 @@ def extract_info_commit(commit, ids):
     if id_ in ids:
         stable_ = commit[1].strip().split(":")[1].strip()
         commit_message = commit[8].strip()
-        commit_code = extract_code_filename(commit[10:])
+        file_code = extract_code_filename(commit[10:])
         add_code = extract_code_addedcode(commit[10:])
-        print id_, add_code
-        # print id_, stable_, commit_message, commit_code
-        # exit()
+        remove_code = extract_code_removedcode(commit[10:])
+        return id_, stable_, commit_message, file_code, add_code, remove_code
+    else:
+        return [], [], [], [], [], []
 
 
 def extract_info_update(path_file, ids):
     # extract information of commit from in ids (ids: commit id)
     commits, i_commits = get_commit_commitindex(path_file)
     print len(commits), len(i_commits), len(ids)
+
+    id_stable, id_msg, id_codefile, id_addcode, id_removecode = [], [], [], [], []
     for i in range(0, len(i_commits)):
         if i == len(i_commits) - 1:
-            extract_info_commit(commits[i_commits[i]:], ids=ids)
+            id_, stable, message, file_code, add_code, remove_code = extract_info_commit(
+                commit=commits[i_commits[i]:], ids=ids)
         else:
-            extract_info_commit(commits[i_commits[i]: (i_commits[i + 1])], ids=ids)
+            id_, stable, message, file_code, add_code, remove_code = extract_info_commit(
+                commit=commits[i_commits[i]:(i_commits[i + 1])], ids=ids)
+
+        if len(id_) != 0:
+            id_stable.append(id_ + ":" + stable)
+            id_msg.append(id_ + ":" + message)
+            id_codefile.append(id_ + ":" + file_code)
+            id_addcode.append(id_ + ":" + "\t".join(add_code))
+            id_removecode.append(id_ + ":" + "\t".join(remove_code))
+    print len(id_stable), len(id_msg), len(id_codefile), len(id_addcode), len(id_removecode)
+    write_file(new_file="./" + path_file.split("/")[-1] + ".stable", info=id_stable)
+    write_file(new_file="./" + path_file.split("/")[-1] + ".msg", info=id_msg)
+    write_file(new_file="./" + path_file.split("/")[-1] + ".codefile", info=id_codefile)
+    write_file(new_file="./" + path_file.split("/")[-1] + ".addedcode", info=id_addcode)
+    write_file(new_file="./" + path_file.split("/")[-1] + ".removedcode", info=id_removecode)
 
 
 ################################################################
-path_file = "../raw_data/eq100_line_aug1.out"
-ids, fs = commit_code_less_two_files(path_file=path_file)
-make_file = "./eq100_line_aug1.out.id_onefile"
-ids = commit_one_file_commit_code(ids, fs, make_file)
-extract_info_update(path_file=path_file, ids=ids)
+def length_commit_mmsg(commit):
+    print "hello"
+
+################################################################
+# path_file = "../raw_data/eq100_line_aug1.out"
+# ids, fs = commit_code_less_two_files(path_file=path_file)
+# make_file = "./eq100_line_aug1.out.id_onefile"
+# ids = commit_one_file_commit_code(ids, fs, make_file)
+# extract_info_update(path_file=path_file, ids=ids)
+################################################################
+path_file = "./eq100_line_aug1.out.msg"

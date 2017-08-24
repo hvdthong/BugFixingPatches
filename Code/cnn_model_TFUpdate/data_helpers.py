@@ -25,6 +25,9 @@ def clean_str(string):
     string = re.sub(r"\s{2,}", " ", string)
     return string.strip().lower()
 
+# string = "ecc_step_ds <Normal> == =!"
+# print clean_str(string)
+# exit()
 
 def stemming_str(string):
     stemmer = SnowballStemmer("english", ignore_stopwords=True)
