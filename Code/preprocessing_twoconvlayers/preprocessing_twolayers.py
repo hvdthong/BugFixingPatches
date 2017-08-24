@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+
+
 def commits_index(path_file):
     commits = list(open(path_file, "r").readlines())
     i_commits = [i for i, c in enumerate(commits) if c.startswith("commit:")]
@@ -125,8 +128,68 @@ def extract_info_update(path_file, ids):
 
 
 ################################################################
-def length_commit_mmsg(commit):
-    print "hello"
+def max_length_commit_msg(path_file):
+    commits = list(open(path_file, "r").readlines())
+    return max([len((c.strip().split(":")[-1]).split(",")) for c in commits])
+
+
+def max_length_commit_code(path_file):
+    commits = list(open(path_file, "r").readlines())
+    lengths = []
+    for c in commits:
+        code = c.strip().split(":")[-1].split("\t")
+        length = [len(t.split(",")) for t in code]
+        lengths += length
+    return max(lengths)
+
+
+def hist_commit_msg(path_file):
+    commits = list(open(path_file, "r").readlines())
+    len_msgs = [len((c.strip().split(":")[-1]).split(",")) for c in commits]
+    plt.hist(len_msgs, normed=True, bins=20)
+    plt.title("Histogram of commit message")
+    plt.xlabel("Length")
+    plt.ylabel("Frequency")
+    plt.show()
+
+
+def hist_commit_addedcode(path_file):
+    commits = list(open(path_file, "r").readlines())
+    lengths = []
+    for c in commits:
+        code = c.strip().split(":")[-1].split("\t")
+        length = [len(t.split(",")) for t in code]
+        lengths += [max(length)]
+    plt.hist(lengths, bins=20)
+    plt.title("Histogram of commit message")
+    plt.xlabel("Length")
+    plt.ylabel("Frequency")
+    plt.show()
+
+
+################################################################
+def filter_msg_maxlength(path_file, max_length):
+    commits = list(open(path_file, "r").readlines())
+    ids = []
+    for c in commits:
+        id_ = c.strip().split(":")[0]
+        msg = len((c.strip().split(":")[-1]).split(","))
+        if msg <= max_length:
+            ids.append(id_)
+    return ids
+
+
+def filter_code_maxlength(path_file, max_length):
+    commits = list(open(path_file, "r").readlines())
+    ids = []
+    for c in commits:
+        id_ = c.strip().split(":")[0]
+        code = c.strip().split(":")[-1].split("\t")
+        length = max([len(t.split(",")) for t in code])
+        if length <= max_length:
+            ids.append(id_)
+    return ids
+
 
 ################################################################
 # path_file = "../raw_data/eq100_line_aug1.out"
@@ -134,5 +197,50 @@ def length_commit_mmsg(commit):
 # make_file = "./eq100_line_aug1.out.id_onefile"
 # ids = commit_one_file_commit_code(ids, fs, make_file)
 # extract_info_update(path_file=path_file, ids=ids)
+
+# path_file = "../raw_data/extra100_line_aug1.out"
+# ids, fs = commit_code_less_two_files(path_file=path_file)
+# make_file = "./extra100_line_aug1.out.id_onefile"
+# ids = commit_one_file_commit_code(ids, fs, make_file)
+# extract_info_update(path_file=path_file, ids=ids)
+#
+# path_file = "../raw_data/lbd100_line_aug1.out"
+# ids, fs = commit_code_less_two_files(path_file=path_file)
+# make_file = "./lbd100_line_aug1.out.id_onefile"
+# ids = commit_one_file_commit_code(ids, fs, make_file)
+# extract_info_update(path_file=path_file, ids=ids)
 ################################################################
-path_file = "./eq100_line_aug1.out.msg"
+# path_file = "./eq100_line_aug1.out.msg"
+# print path_file, max_length_commit_msg(path_file=path_file)
+# path_file = "./extra100_line_aug1.out.msg"
+# print path_file, max_length_commit_msg(path_file=path_file)
+# path_file = "./lbd100_line_aug1.out.msg"
+# print path_file, max_length_commit_msg(path_file=path_file)
+#
+# path_file = "./eq100_line_aug1.out.codefile"
+# print path_file, max_length_commit_msg(path_file=path_file)
+# path_file = "./extra100_line_aug1.out.codefile"
+# print path_file, max_length_commit_msg(path_file=path_file)
+# path_file = "./lbd100_line_aug1.out.codefile"
+# print path_file, max_length_commit_msg(path_file=path_file)
+################################################################
+# path_file = "./eq100_line_aug1.out.msg"
+# hist_commit_msg(path_file=path_file)
+# path_file = "./eq100_line_aug1.out.addedcode"
+# hist_commit_addedcode(path_file=path_file)
+
+################################################################
+# path_added_file = "./eq100_line_aug1.out.addedcode"
+# max_addedcode = max_length_commit_code(path_file=path_added_file)
+# path_removed_file = "./eq100_line_aug1.out.removedcode"
+# max_removedcode = max_length_commit_code(path_file=path_removed_file)
+# print max(max_addedcode, max_removedcode)
+
+max_length_text, max_length_code = 175, 250
+path_msg = "./eq100_line_aug1.out.msg"
+path_addedcode, path_removed_code = "./eq100_line_aug1.out.addedcode", "./eq100_line_aug1.out.removedcode"
+id_msg = filter_msg_maxlength(path_file=path_msg, max_length=max_length_text)
+id_addedcode = filter_code_maxlength(path_file=path_addedcode, max_length=max_length_code)
+id_removedcode = filter_code_maxlength(path_file=path_removed_code, max_length=max_length_code)
+print len(id_msg), len(id_addedcode), len(id_removedcode)
+print len(list(set(id_msg) & set(id_addedcode) & set(id_removedcode)))
