@@ -290,12 +290,14 @@ def read_dict(path_file):
 
 def doing_mapping_msg_file(index, message, dict_index, dict_word):
     # print index, message
-    print index
+    # print index
     texts = message.strip().split(",")
     # texts_index = [dict_index.index(t) for t in texts]
     # texts_words = [dict_word[t] for t in texts_index]
-
-    texts_words = [dict_word[int(t) - 1] for t in texts]
+    # print index, texts
+    # for t in texts:
+    #     print int(t)
+    texts_words = [dict_word[int(t) - 1] if t != "" else "" for t in texts]
     return " ".join(texts_words)
 
 
@@ -310,26 +312,48 @@ def mapping_msg_file(path_file, path_dict):
     return mapping
 
 
-def doing_mapping_added_removed_code(index, message, dict_index, dict_word):
-    print "hello"
+def doing_mapping_added_removed_code(index, code, dict_index, dict_word):
+    new_lines = ""
+    for lines in code:
+        split_lines = lines.split(",")
+        if len(split_lines) > 1:
+            text_words = [dict_word[int(split_lines[i]) - 1] for i in range(1, len(split_lines))]
+            text_words = split_lines[0] + " " + " ".join(text_words)
+            new_lines += "\t" + text_words
+        else:
+            return ""
+    return new_lines.strip()
 
 
 def mapping_added_removed_code(path_file, path_dict):
     dict_index, dict_word = read_dict(path_file=path_dict)
     commits = list(open(path_file, "r").readlines())
     ids = [c.strip().split(":")[0] for c in commits]
-    print len(ids)
-
+    codes = [c.strip().split(":")[-1].split("\t") for c in commits]
+    words = [doing_mapping_added_removed_code(index=0, code=c,
+                                              dict_index=dict_index, dict_word=dict_word) for c in codes]
+    mapping = [i + "\t" + w for i, w in zip(ids, words)]
+    return mapping
 
 
 def create_mapping_dict(options, maxtext, maxcode):
     print options, maxtext, maxcode
     paths = input_path_maxtext_maxcode(options, maxtext=maxtext, maxcode=maxcode)
     path_msg, path_addedcode, path_removedcode, path_codefile = paths[0], paths[1], paths[2], paths[3]
+
     # print input_path_dict(options=options)
-    # mapping_msg = mapping_msg_file(path_file=path_msg, path_dict=input_path_dict(options=options))
+    mapping_msg = mapping_msg_file(path_file=path_msg, path_dict=input_path_dict(options=options))
+    write_file(new_file=path_msg + ".mapping", info=mapping_msg)
+
     mapping_addedcode = mapping_added_removed_code(path_file=path_addedcode, path_dict=input_path_dict(options=options))
-    # write_file(new_file=path_msg + ".mapping", info=mapping_msg)
+    write_file(new_file=path_addedcode + ".mapping", info=mapping_addedcode)
+
+    mapping_removedcode = mapping_added_removed_code(path_file=path_removedcode,
+                                                     path_dict=input_path_dict(options=options))
+    write_file(new_file=path_removedcode + ".mapping", info=mapping_removedcode)
+
+    mapping_codefile = mapping_msg_file(path_file=path_codefile, path_dict=input_path_dict(options=options))
+    write_file(new_file=path_codefile + ".mapping", info=mapping_codefile)
 
 
 ################################################################
@@ -385,4 +409,6 @@ max_length_text, max_length_code = 175, 250
 # create_maxtext_maxcode(options="extra", maxtext=max_length_text, maxcode=max_length_code)
 # create_maxtext_maxcode(options="lbd", maxtext=max_length_text, maxcode=max_length_code)
 
-create_mapping_dict(options="eq", maxtext=max_length_text, maxcode=max_length_code)
+# create_mapping_dict(options="eq", maxtext=max_length_text, maxcode=max_length_code)
+# create_mapping_dict(options="extra", maxtext=max_length_text, maxcode=max_length_code)
+# create_mapping_dict(options="lbd", maxtext=max_length_text, maxcode=max_length_code)
