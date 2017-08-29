@@ -175,10 +175,20 @@ def padding_msg(path_file, max_len):
 def padding_code(path_file, maxlen_code, maxline_code):
     commits = list(open(path_file, "r").readlines())
     ids = [c.strip().split("\t")[0] for c in commits]
-    for c in commits:
-        print c
-        exit()
-    return 0
+    codes = [c.strip().split("\t")[1:] for c in commits]
+    pad_codes = [pad_sentences(c, seq_len=maxlen_code) for c in codes]
+    pad_codes = pad_docs(docs=pad_codes, doc_len=maxline_code, seq_len=maxlen_code)
+    pad_codes = [i + "\t" + "\t".join(p) for i, p in zip(ids, pad_codes)]
+    return pad_codes
+
+
+def padding_file(options, maxlen_msg, maxlen_code, maxline_code):
+    paths = input_path_maxtext_maxcode_maxline_mapping(options)
+    msg_path, addedcode_path, removedcode_path, codefile_path = paths[0], paths[1], paths[2], paths[3]
+    pad_msg = padding_msg(path_file=msg_path, max_len=maxlen_msg)
+    pad_addedcode = padding_code(path_file=addedcode_path, maxlen_code=maxlen_code, maxline_code=maxline_code)
+    pad_removedcode = padding_code(path_file=removedcode_path, maxlen_code=maxlen_code, maxline_code=maxline_code)
+    return pad_msg, pad_addedcode, pad_removedcode
 
 
 def padding_all(maxlen_msg, maxlen_code, maxline_code, maxlen_codefile):
@@ -190,8 +200,10 @@ def padding_all(maxlen_msg, maxlen_code, maxline_code, maxlen_codefile):
     eq_pad_msg = padding_msg(eq_msg_path, max_len=maxlen_msg)
     extra_pad_msg = padding_msg(extra_msg_path, max_len=maxlen_msg)
     lbd_pad_msg = padding_msg(lbd_msg_path, max_len=maxlen_msg)
-    print len(eq_pad_msg), len(extra_pad_msg), len(lbd_pad_msg)
+    # print "Padding in commit messages for different files: eq:%i, extra:%i, lbd:%i" % \
+    #       (len(eq_pad_msg), len(extra_pad_msg), len(lbd_pad_msg))
     all_pad_msg = eq_pad_msg + extra_pad_msg + lbd_pad_msg
+    print "Padding in commit messages for different files: "
     print len(all_pad_msg)
 
     eq_added_path, extra_added_path, lbd_added_path = paths_eq[1], paths_extra[1], paths_lbd[1]
@@ -203,4 +215,4 @@ def padding_all(maxlen_msg, maxlen_code, maxline_code, maxlen_codefile):
 ########################################################################################
 max_msg, max_code, max_linecode, max_file = max_commit_all()
 print max_msg, max_code, max_linecode, max_file
-padding_all(maxlen_msg=max_msg, maxlen_code=max_code, maxline_code=max_linecode, maxlen_codefile=max_file)
+padding_file(options="eq", maxlen_msg=max_msg, maxlen_code=max_code, maxline_code=max_linecode)
