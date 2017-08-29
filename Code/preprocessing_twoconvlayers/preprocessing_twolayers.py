@@ -47,6 +47,41 @@ def input_path_maxtext_maxcode(options, maxtext, maxcode):
     return paths
 
 
+def input_path_maxtext_maxcode_maxline(options, maxtext, maxcode, maxline):
+    paths = []
+    if options == "eq":
+        paths.append("./eq100_line_aug1.out.msg" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+        paths.append("./eq100_line_aug1.out.addedcode" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+        paths.append("./eq100_line_aug1.out.removedcode" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+        paths.append("./eq100_line_aug1.out.codefile" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+    elif options == "extra":
+        paths.append("./extra100_line_aug1.out.msg" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+        paths.append("./extra100_line_aug1.out.addedcode" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+        paths.append("./extra100_line_aug1.out.removedcode" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+        paths.append("./extra100_line_aug1.out.codefile" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+    elif options == "lbd":
+        paths.append("./lbd100_line_aug1.out.msg" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+        paths.append("./lbd100_line_aug1.out.addedcode" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+        paths.append("./lbd100_line_aug1.out.removedcode" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+        paths.append("./lbd100_line_aug1.out.codefile" + ".maxtext" + str(maxtext)
+                     + ".maxcode" + str(maxcode) + ".maxline" + str(maxline))
+    else:
+        print "Your options are not correct"
+        exit()
+    return paths
+
+
 def input_path_dict(options):
     path = ""
     if options == "eq":
@@ -54,7 +89,7 @@ def input_path_dict(options):
     elif options == "extra":
         path = "../raw_data/extra100.dict"
     elif options == "lbd":
-         path = "../raw_data/lbd100.dict"
+        path = "../raw_data/lbd100.dict"
     else:
         print "Your options are not correct"
         exit()
@@ -234,6 +269,10 @@ def filter_msg_maxlength(path_file, max_length):
     for c in commits:
         id_ = c.strip().split(":")[0]
         msg = len((c.strip().split(":")[-1]).split(","))
+        if id_ == "c675949ec58ca50d5a3ae3c757892f1560f6e896":
+            print id_, msg
+            print c
+            exit()
         if msg <= max_length:
             ids.append(id_)
     return ids
@@ -251,6 +290,19 @@ def filter_code_maxlength(path_file, max_length):
     return ids
 
 
+def filter_code_maxlength_maxline(path_file, max_length, max_line):
+    commits = list(open(path_file, "r").readlines())
+    ids = []
+    for c in commits:
+        id_ = c.strip().split(":")[0]
+        code = c.strip().split(":")[-1].split("\t")
+        length = max([len(t.split(",")) for t in code])
+        line = len(code)
+        if length <= max_length and line <= max_line:
+            ids.append(id_)
+    return ids
+
+
 ################################################################
 def select_ids(path_file, ids):
     commits = list(open(path_file, "r").readlines())
@@ -258,26 +310,32 @@ def select_ids(path_file, ids):
     return commits_filter
 
 
-def create_maxtext_maxcode(options, maxtext, maxcode):
+def create_maxtext_maxcode_maxline(options, maxtext, maxcode, maxline):
     print options, maxtext, maxcode
     print input_path(options)
     path_msg, path_addedcode, path_removedcode = input_path(options)[0], input_path(options)[1], input_path(options)[2]
     id_msg = filter_msg_maxlength(path_file=path_msg, max_length=maxtext)
-    id_addedcode = filter_code_maxlength(path_file=path_addedcode, max_length=maxcode)
-    id_removedcode = filter_code_maxlength(path_file=path_removedcode, max_length=maxcode)
+
+    # id_addedcode = filter_code_maxlength(path_file=path_addedcode, max_length=maxcode)
+    # id_removedcode = filter_code_maxlength(path_file=path_removedcode, max_length=maxcode)
+
+    id_addedcode = filter_code_maxlength_maxline(path_file=path_addedcode, max_length=maxcode, max_line=maxline)
+    id_removedcode = filter_code_maxlength_maxline(path_file=path_removedcode, max_length=maxcode, max_line=maxline)
     print path_msg, path_addedcode, path_removedcode
     print len(id_msg), len(id_addedcode), len(id_removedcode)
     ids = list(set(id_msg) & set(id_addedcode) & set(id_removedcode))
-    print "Total commits have max length text %i and max length code %i: %i" \
-          % (max_length_text, max_length_code, len(ids))
+    if options == "extra":
+        ids.remove("c675949ec58ca50d5a3ae3c757892f1560f6e896")  # remove this element in extra file
+    print "Total commits have max length text %i, max length code %i, and max line of code %i: %i" \
+          % (maxtext, maxcode, maxline, len(ids))
     write_file(new_file=input_path(options)[0] + ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode)
-               , info=select_ids(input_path(options)[0], ids=ids))
+                        + ".maxline" + str(maxline), info=select_ids(input_path(options)[0], ids=ids))
     write_file(new_file=input_path(options)[1] + ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode)
-               , info=select_ids(input_path(options)[1], ids=ids))
+                        + ".maxline" + str(maxline), info=select_ids(input_path(options)[1], ids=ids))
     write_file(new_file=input_path(options)[2] + ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode)
-               , info=select_ids(input_path(options)[2], ids=ids))
+                        + ".maxline" + str(maxline), info=select_ids(input_path(options)[2], ids=ids))
     write_file(new_file=input_path(options)[3] + ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode)
-               , info=select_ids(input_path(options)[3], ids=ids))
+                        + ".maxline" + str(maxline), info=select_ids(input_path(options)[3], ids=ids))
 
 
 ################################################################
@@ -289,14 +347,7 @@ def read_dict(path_file):
 
 
 def doing_mapping_msg_file(index, message, dict_index, dict_word):
-    # print index, message
-    # print index
     texts = message.strip().split(",")
-    # texts_index = [dict_index.index(t) for t in texts]
-    # texts_words = [dict_word[t] for t in texts_index]
-    # print index, texts
-    # for t in texts:
-    #     print int(t)
     texts_words = [dict_word[int(t) - 1] if t != "" else "" for t in texts]
     return " ".join(texts_words)
 
@@ -336,9 +387,10 @@ def mapping_added_removed_code(path_file, path_dict):
     return mapping
 
 
-def create_mapping_dict(options, maxtext, maxcode):
+def create_mapping_dict(options, maxtext, maxcode, maxline):
     print options, maxtext, maxcode
-    paths = input_path_maxtext_maxcode(options, maxtext=maxtext, maxcode=maxcode)
+    # paths = input_path_maxtext_maxcode(options, maxtext=maxtext, maxcode=maxcode)
+    paths = input_path_maxtext_maxcode_maxline(options, maxtext=maxtext, maxcode=maxcode, maxline=maxline)
     path_msg, path_addedcode, path_removedcode, path_codefile = paths[0], paths[1], paths[2], paths[3]
 
     # print input_path_dict(options=options)
@@ -402,13 +454,12 @@ def create_mapping_dict(options, maxtext, maxcode):
 # path_removed_file = "./eq100_line_aug1.out.removedcode"
 # max_removedcode = max_length_commit_code(path_file=path_removed_file)
 # print max(max_addedcode, max_removedcode)
-
 ################################################################
-max_length_text, max_length_code = 175, 250
-# create_maxtext_maxcode(options="eq", maxtext=max_length_text, maxcode=max_length_code)
-# create_maxtext_maxcode(options="extra", maxtext=max_length_text, maxcode=max_length_code)
-# create_maxtext_maxcode(options="lbd", maxtext=max_length_text, maxcode=max_length_code)
+max_length_text, max_length_code, max_line_code = 175, 250, 30
+# create_maxtext_maxcode_maxline(options="eq", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
+# create_maxtext_maxcode_maxline(options="extra", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
+# create_maxtext_maxcode_maxline(options="lbd", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
 
-# create_mapping_dict(options="eq", maxtext=max_length_text, maxcode=max_length_code)
-# create_mapping_dict(options="extra", maxtext=max_length_text, maxcode=max_length_code)
-# create_mapping_dict(options="lbd", maxtext=max_length_text, maxcode=max_length_code)
+# create_mapping_dict(options="eq", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
+# create_mapping_dict(options="extra", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
+# create_mapping_dict(options="lbd", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
