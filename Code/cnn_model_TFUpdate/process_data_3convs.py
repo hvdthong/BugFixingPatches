@@ -51,3 +51,13 @@ def padding_commit():
                                               get_padding(pad_addedcode), get_padding(pad_removedcode)
     print len(pad_msg), len(pad_addedcode), len(pad_removedcode)
     return pad_msg, pad_addedcode, pad_removedcode
+
+
+def build_vocab(sentences, options):
+    if options == "msg":
+        print options
+    elif options == "code":
+        print options
+    else:
+        print "Please type correct options"
+        exit()
