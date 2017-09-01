@@ -1,7 +1,6 @@
 from data_helpers import stemming_str, remove_stopwords
 import sys
 
-
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
@@ -134,6 +133,23 @@ def max_commit_all():
            max(maxline_addedcode, maxline_removedcode), maxlen_codefile
 
 
+def max_commit_file(options):
+    paths = input_path_maxtext_maxcode_maxline_mapping(options)
+    msg_path, addedcode_path, removedcode_path, codefile_path = paths[0], paths[1], paths[2], paths[3]
+    maxlen_msg = max_commit_message_codefile(msg_path)
+    print "Max length in commit messages with %s:%i" % (options, maxlen_msg)
+    maxlen_addedcode = max_commit_code(addedcode_path)
+    print "Max length and maxline in added commit code with %s:%i, %i" \
+          % (options, maxlen_addedcode[0], maxlen_addedcode[1])
+    maxlen_removedcode = max_commit_code(removedcode_path)
+    print "Max length and maxline in removed commit code with %s:%i, %i" \
+          % (options, maxlen_removedcode[0], maxlen_removedcode[1])
+    maxlen_codefile = max_commit_message_codefile(codefile_path)
+    print "Max length in commit code file name with %s:%i" % (options, maxlen_codefile)
+    return maxlen_msg, max(maxlen_addedcode[0], maxlen_removedcode[0]), \
+           max(maxlen_addedcode[1], maxlen_removedcode[1]), maxlen_codefile
+
+
 ########################################################################################
 ########################################################################################
 def pad_sentences(sentences, seq_len, padding_word="<PAD/>"):
@@ -191,7 +207,7 @@ def padding_file(options, maxlen_msg, maxlen_code, maxline_code):
     return pad_msg, pad_addedcode, pad_removedcode
 
 
-def padding_all(maxlen_msg, maxlen_code, maxline_code, maxlen_codefile):
+def padding_all(maxlen_msg, maxlen_code, maxline_code):
     paths_eq = input_path_maxtext_maxcode_maxline_mapping("eq")
     paths_extra = input_path_maxtext_maxcode_maxline_mapping("extra")
     paths_lbd = input_path_maxtext_maxcode_maxline_mapping("lbd")
@@ -213,6 +229,8 @@ def padding_all(maxlen_msg, maxlen_code, maxline_code, maxlen_codefile):
 
 ########################################################################################
 ########################################################################################
-max_msg, max_code, max_linecode, max_file = max_commit_all()
-print max_msg, max_code, max_linecode, max_file
-padding_file(options="eq", maxlen_msg=max_msg, maxlen_code=max_code, maxline_code=max_linecode)
+# print max_commit_file(options="eq")
+# print max_commit_file(options="extra")
+# print max_commit_file(options="lbd")
+# exit()
+# padding_file(options="eq", maxlen_msg=max_msg, maxlen_code=max_code, maxline_code=max_linecode)

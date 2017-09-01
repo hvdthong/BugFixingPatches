@@ -24,6 +24,20 @@ def input_path(options):
     return paths
 
 
+def input_path_stable(options):
+    paths = []
+    if options == "eq":
+        paths.append("./eq100_line_aug1.out.stable")
+    elif options == "extra":
+        paths.append("./extra100_line_aug1.out.stable")
+    elif options == "lbd":
+        paths.append("./lbd100_line_aug1.out.stable")
+    else:
+        print "Your options are not correct"
+        exit()
+    return paths
+
+
 def input_path_maxtext_maxcode(options, maxtext, maxcode):
     paths = []
     if options == "eq":
@@ -324,8 +338,8 @@ def create_maxtext_maxcode_maxline(options, maxtext, maxcode, maxline):
     print path_msg, path_addedcode, path_removedcode
     print len(id_msg), len(id_addedcode), len(id_removedcode)
     ids = list(set(id_msg) & set(id_addedcode) & set(id_removedcode))
-    if options == "extra":
-        ids.remove("c675949ec58ca50d5a3ae3c757892f1560f6e896")  # remove this element in extra file
+    # if options == "extra":
+    #     ids.remove("c675949ec58ca50d5a3ae3c757892f1560f6e896")  # remove this element in extra file
     print "Total commits have max length text %i, max length code %i, and max line of code %i: %i" \
           % (maxtext, maxcode, maxline, len(ids))
     write_file(new_file=input_path(options)[0] + ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode)
@@ -408,6 +422,20 @@ def create_mapping_dict(options, maxtext, maxcode, maxline):
     write_file(new_file=path_codefile + ".mapping", info=mapping_codefile)
 
 
+def create_stable_maxtext_maxcode(options, maxtext, maxcode, maxline):
+    paths = input_path_maxtext_maxcode_maxline(options=options, maxtext=maxtext, maxcode=maxcode, maxline=maxline)
+
+    # print paths
+    # print len(list(open(paths[0], "r").readlines())), len(list(open(paths[1], "r").readlines())), \
+    #     len(list(open(paths[2], "r").readlines())), len(list(open(paths[3], "r").readlines()))
+
+    commits = list(open(paths[0], "r").readlines())
+    ids = [c.strip().split(":")[0] for c in commits]
+    path_stable = input_path_stable(options=options)
+    stable_filter = select_ids(path_file=path_stable[0], ids=ids)
+    write_file(new_file=path_stable[0] + ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode), info=stable_filter)
+
+
 ################################################################
 ################################################################
 ################################################################
@@ -463,3 +491,7 @@ max_length_text, max_length_code, max_line_code = 175, 250, 30
 # create_mapping_dict(options="eq", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
 # create_mapping_dict(options="extra", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
 # create_mapping_dict(options="lbd", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
+
+create_stable_maxtext_maxcode(options="eq", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
+create_stable_maxtext_maxcode(options="extra", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)
+create_stable_maxtext_maxcode(options="lbd", maxtext=max_length_text, maxcode=max_length_code, maxline=max_line_code)

@@ -87,7 +87,6 @@ if __name__ == "__main__":
     pad_sents = [pad_sentences(doc, max_sents, padding_word="<PAD/>") for doc in docs]
     # print pad_sents
     pad_sents = pad_docs(docs=pad_sents, doc_len=max_docs, seq_len=max_sents, padding_word="<PAD/>")
-    # print pad_sents
     # print max_sents, max_docs
     # print len(pad_sents)
     new_sents = flat_docs(pad_sents)
