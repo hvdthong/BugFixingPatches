@@ -1,18 +1,51 @@
 from padding import max_commit_file, padding_file
+import numpy as np
 
 
 def input_stable_path(options):
     paths = []
     if options == "eq":
-        paths.append("./eq100_line_aug1.out.stable.maxtext175.maxcode250")
+        paths.append("../preprocessing_twoconvlayers/eq100_line_aug1.out.stable.maxtext175.maxcode250")
     elif options == "extra":
-        paths.append("./extra100_line_aug1.out.stable.maxtext175.maxcode250")
+        paths.append("../preprocessing_twoconvlayers/extra100_line_aug1.out.stable.maxtext175.maxcode250")
     elif options == "lbd":
-        paths.append("./lbd100_line_aug1.out.stable.maxtext175.maxcode250")
+        paths.append("../preprocessing_twoconvlayers/lbd100_line_aug1.out.stable.maxtext175.maxcode250")
     else:
         print "Wrong options"
         exit()
     return paths
+
+
+def input_data():
+    print "hello"
+
+
+def write_file_normal(new_file, info):
+    with open(new_file, "w") as file_:
+        [file_.write(str(c) + '\n') for c in info]
+
+
+def write_file_special(new_file, info, options):
+    if options == "msg":
+        with open(new_file, "w") as file_:
+            for c in info:
+                print type(c)
+                print c.shape
+                # print list(c)
+                c = c.tolist()
+                c = map(str, c)
+                print type(c)
+                print c
+                print len(c)
+                print c[0]
+                print " ".join(c)
+                exit()
+            [file_.write(str(" ".join(list(c))) + '\n') for c in info]
+    elif options == "code":
+        print "hello"
+    else:
+        print "Your options are uncorrect"
+        exit()
 
 
 def finding_max_commit():
@@ -27,7 +60,8 @@ def finding_max_commit():
 
 
 def get_padding(pad):
-    return [p.split("\t")[1:]for p in pad]
+    # removed id_ at the front of padding
+    return [p.split("\t")[1:] for p in pad]
 
 
 def padding_commit():
@@ -55,9 +89,53 @@ def padding_commit():
 
 def build_vocab(sentences, options):
     if options == "msg":
-        print options
+        vocabulary = []
+        for sent in sentences:
+            vocabulary += sent[0].split()
+        vocabulary = list(set(vocabulary))
     elif options == "code":
-        print options
+        vocabulary = []
+        for doc in sentences:
+            for d in doc:
+                vocabulary += d.split()
+        vocabulary = list(set(vocabulary))
     else:
         print "Please type correct options"
         exit()
+
+    vocabulary.append("<UNK/>")
+    return vocabulary
+
+
+def build_input_data(sentences, options, vocab, maxinput):
+    if options == "msg":
+        new_sents = []
+        for sent in sentences:
+            new_sents.append(np.array([vocab.index(w) if w in vocab else vocab.index("<UNK/>")
+                                       for w in sent[0].split()]))
+            if len(new_sents) >= maxinput:
+                return np.array(new_sents)
+    elif options == "code":
+        output = []
+        for doc in sentences:
+            new_doc = []
+            for d in doc:
+                new_doc.append(np.array([vocab.index(w) if w in vocab else vocab.index("<UNK/>") for w in d.split()]))
+            output.append(np.array(new_doc))
+            if len(output) >= maxinput:
+                return np.array(output)
+
+
+#################################################################################################################
+#################################################################################################################
+filename = "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250"
+pad_msg, pad_addedcode, pad_removedcode = padding_commit()
+voca_msg = build_vocab(sentences=pad_msg, options="msg")
+write_file_normal(new_file=filename + ".msg" + ".dict", info=voca_msg)
+msg = build_input_data(sentences=pad_msg, options="msg", vocab=voca_msg, maxinput=100)
+write_file_special(new_file=filename + ".msg" + ".input", info=msg, options="msg")
+
+# vocab_code = build_vocab(sentences=pad_addedcode + pad_removedcode, options="code")
+# added_code = build_input_data(sentences=pad_addedcode, options="code", vocab=vocab_code, maxinput=100
+# removeded_code = build_input_data(sentences=pad_removedcode, options="code", vocab=vocab_code,
+#                                   maxinput=100)

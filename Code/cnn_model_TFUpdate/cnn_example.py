@@ -110,7 +110,7 @@ if __name__ == "__main__":
     print testing.shape
     print a
     print testing
-    # print embedded_chars.eval(feed_dict={x: [a]})
+    print embedded_chars_code_left.eval(feed_dict={x: [a]})
     # print shape_ex.eval(feed_dict={x: [a]})
     print pooled.eval(feed_dict={x: [a]}).shape
     print h_pool_.eval(feed_dict={x: [a]}).shape
