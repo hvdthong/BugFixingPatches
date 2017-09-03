@@ -39,6 +39,8 @@ def write_file_special(new_file, info, options):
                 print len(c)
                 print c[0]
                 print " ".join(c)
+                c = map(str, c.tolist())
+                file_.write(" ".join(c) + '\n')
                 exit()
             [file_.write(str(" ".join(list(c))) + '\n') for c in info]
     elif options == "code":
