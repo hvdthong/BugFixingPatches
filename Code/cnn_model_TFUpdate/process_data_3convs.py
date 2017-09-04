@@ -16,8 +16,78 @@ def input_stable_path(options):
     return paths
 
 
-def input_data():
+def len_path_data(options):
+    if options == "eq" or options == "extra" or options == "lbd":
+        path = input_stable_path(options=options)
+    else:
+        print "Wrong options"
+        exit()
+    length = len(list(open(path[0], "r").readlines()))
+    return length
+
+
+def input_path_data(options):
+    paths = []
+    if options == "msg":
+        paths.append("../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250.msg.input")
+    elif options == "addedcode":
+        paths.append(
+            "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250.addedcode.input")
+    elif options == "removedcode":
+        paths.append(
+            "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250.removedcode.input")
+    else:
+        print "Your options are wrong, please retype again"
+        exit()
+    return paths[0]
+
+
+def input_path_codefile(options):
+    paths = []
+    if options == "eq":
+        paths.append(
+            "../preprocessing_twoconvlayers/eq100_line_aug1.out.codefile.maxtext175.maxcode250.maxline30.mapping")
+    elif options == "extra":
+        paths.append(
+            "../preprocessing_twoconvlayers/extra100_line_aug1.out.codefile.maxtext175.maxcode250.maxline30.mapping")
+    elif options == "lbd":
+        paths.append(
+            "../preprocessing_twoconvlayers/eq100_line_aug1.out.codefile.maxtext175.maxcode250.maxline30.mapping")
+    else:
+        print "Your options are wrong, please retype again"
+        exit()
+    return paths[0]
+
+
+def read_input_codefile(options):
+    if options == "eq" or options == "extra" or options == "lbd":
+        print "hello"
+    else:
+        print "Your options are wrong, please retype again"
+        exit()
+
+
+def read_input_codefile_all():
     print "hello"
+
+
+def read_input_data(options):
+    if options == "msg":
+        path = input_path_data(options=options)
+        msg = list(open(path, "r").readlines())
+        msg = np.array([np.array(map(int, line.split())) for line in msg])
+        return msg
+    elif options == "addedcode" or options == "removedcode":
+        path = input_path_data(options=options)
+        code = list(open(path, "r").readlines())
+        new_code = []
+        for commit in code:
+            commit_split = commit.split("\t")
+            new_code.append(np.array([(np.array(map(int, line.split()))) for line in commit_split]))
+        return np.array(new_code)
+    else:
+        print "Your options are wrong, please retype again"
+        exit()
 
 
 def write_file_normal(new_file, info):
@@ -71,7 +141,7 @@ def padding_commit():
                                                                        maxlen_code=maxlen_commitcode,
                                                                        maxline_code=maxline_commitcode)
     print len(pad_msg_eq), len(pad_msg_extra), len(pad_msg_lbd)
-    pad_msg = pad_msg_eq + pad_msg_extra + pad_addedcode_lbd
+    pad_msg = pad_msg_eq + pad_msg_extra + pad_msg_lbd
     pad_addedcode = pad_addedcode_eq + pad_addedcode_extra + pad_addedcode_lbd
     pad_removedcode = pad_removedcode_eq + pad_removedcode_extra + pad_removedcode_lbd
     pad_msg, pad_addedcode, pad_removedcode = get_padding(pad_msg), \
@@ -134,20 +204,19 @@ def build_input_data(sentences, options, vocab, maxinput):
 
 #################################################################################################################
 #################################################################################################################
-filename = "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250"
-pad_msg, pad_addedcode, pad_removedcode = padding_commit()
-
+# filename = "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250"
+# pad_msg, pad_addedcode, pad_removedcode = padding_commit()
 # options = "msg"
-# voca_msg = build_vocab(sentences=pad_msg, options=options)
-# write_file_normal(new_file=filename + "." + options + ".dict", info=voca_msg)
-# msg = build_input_data(sentences=pad_msg, options=options, vocab=voca_msg, maxinput=len(pad_msg))
+# vocab_msg = build_vocab(sentences=pad_msg, options=options)
+# write_file_normal(new_file=filename + "." + options + ".dict", info=vocab_msg)
+# msg = build_input_data(sentences=pad_msg, options=options, vocab=vocab_msg, maxinput=len(pad_msg))
 # write_file_special(new_file=filename + "." + options + ".input", info=msg, options=options)
 
-options = "code"
-vocab_code = build_vocab(sentences=pad_addedcode + pad_removedcode, options=options)
-write_file_normal(new_file=filename + "." + options + ".dict", info=vocab_code)
-added_code = build_input_data(sentences=pad_addedcode, options=options, vocab=vocab_code, maxinput=len(pad_addedcode))
-write_file_special(new_file=filename + ".added" + options + ".input", info=added_code, options=options)
-removeded_code = build_input_data(sentences=pad_removedcode, options="code", vocab=vocab_code,
-                                  maxinput=len(pad_removedcode))
-write_file_special(new_file=filename + ".removed" + options + ".input", info=removeded_code, options=options)
+# options = "code"
+# vocab_code = build_vocab(sentences=pad_addedcode + pad_removedcode, options=options)
+# write_file_normal(new_file=filename + "." + options + ".dict", info=vocab_code)
+# added_code = build_input_data(sentences=pad_addedcode, options=options, vocab=vocab_code, maxinput=len(pad_addedcode))
+# write_file_special(new_file=filename + ".added" + options + ".input", info=added_code, options=options)
+# removeded_code = build_input_data(sentences=pad_removedcode, options="code", vocab=vocab_code,
+#                                   maxinput=len(pad_removedcode))
+# write_file_special(new_file=filename + ".removed" + options + ".input", info=removeded_code, options=options)
