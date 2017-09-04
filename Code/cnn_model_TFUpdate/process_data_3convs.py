@@ -29,22 +29,13 @@ def write_file_special(new_file, info, options):
     if options == "msg":
         with open(new_file, "w") as file_:
             for c in info:
-                print type(c)
-                print c.shape
-                # print list(c)
-                c = c.tolist()
-                c = map(str, c)
-                print type(c)
-                print c
-                print len(c)
-                print c[0]
-                print " ".join(c)
                 c = map(str, c.tolist())
                 file_.write(" ".join(c) + '\n')
-                exit()
-            [file_.write(str(" ".join(list(c))) + '\n') for c in info]
     elif options == "code":
-        print "hello"
+        with open(new_file, "w") as file_:
+            for d in info:
+                d = [" ".join(map(str, l.tolist())) for l in d]
+                file_.write("\t".join(d) + '\n')
     else:
         print "Your options are uncorrect"
         exit()
@@ -112,11 +103,22 @@ def build_vocab(sentences, options):
 def build_input_data(sentences, options, vocab, maxinput):
     if options == "msg":
         new_sents = []
+        index_empty = vocab.index("<PAD/>")
         for sent in sentences:
-            new_sents.append(np.array([vocab.index(w) if w in vocab else vocab.index("<UNK/>")
-                                       for w in sent[0].split()]))
+            line = []
+            for w in sent[0].split():
+                if w == "<PAD/>":
+                    line.append(index_empty)
+                else:
+                    if w in vocab:
+                        line.append(vocab.index(w))
+                    else:
+                        line.append(vocab.index("<UNK/>"))
+            new_sents.append(np.array(line))
             if len(new_sents) >= maxinput:
                 return np.array(new_sents)
+            else:
+                print len(new_sents)
     elif options == "code":
         output = []
         for doc in sentences:
@@ -126,18 +128,26 @@ def build_input_data(sentences, options, vocab, maxinput):
             output.append(np.array(new_doc))
             if len(output) >= maxinput:
                 return np.array(output)
+            else:
+                print len(output)
 
 
 #################################################################################################################
 #################################################################################################################
 filename = "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250"
 pad_msg, pad_addedcode, pad_removedcode = padding_commit()
-voca_msg = build_vocab(sentences=pad_msg, options="msg")
-write_file_normal(new_file=filename + ".msg" + ".dict", info=voca_msg)
-msg = build_input_data(sentences=pad_msg, options="msg", vocab=voca_msg, maxinput=100)
-write_file_special(new_file=filename + ".msg" + ".input", info=msg, options="msg")
 
-# vocab_code = build_vocab(sentences=pad_addedcode + pad_removedcode, options="code")
-# added_code = build_input_data(sentences=pad_addedcode, options="code", vocab=vocab_code, maxinput=100
-# removeded_code = build_input_data(sentences=pad_removedcode, options="code", vocab=vocab_code,
-#                                   maxinput=100)
+# options = "msg"
+# voca_msg = build_vocab(sentences=pad_msg, options=options)
+# write_file_normal(new_file=filename + "." + options + ".dict", info=voca_msg)
+# msg = build_input_data(sentences=pad_msg, options=options, vocab=voca_msg, maxinput=len(pad_msg))
+# write_file_special(new_file=filename + "." + options + ".input", info=msg, options=options)
+
+options = "code"
+vocab_code = build_vocab(sentences=pad_addedcode + pad_removedcode, options=options)
+write_file_normal(new_file=filename + "." + options + ".dict", info=vocab_code)
+added_code = build_input_data(sentences=pad_addedcode, options=options, vocab=vocab_code, maxinput=len(pad_addedcode))
+write_file_special(new_file=filename + ".added" + options + ".input", info=added_code, options=options)
+removeded_code = build_input_data(sentences=pad_removedcode, options="code", vocab=vocab_code,
+                                  maxinput=len(pad_removedcode))
+write_file_special(new_file=filename + ".removed" + options + ".input", info=removeded_code, options=options)
