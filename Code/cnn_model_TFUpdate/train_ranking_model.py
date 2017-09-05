@@ -162,6 +162,7 @@ x_text_neg_dev, x_code_neg_dev = x_text_neg_dev[neg_dev_index], x_code_neg_dev[n
 print "Making a list of pairs for dev data"
 print x_text_pos_dev.shape, x_code_pos_dev.shape
 print x_text_neg_dev.shape, x_code_neg_dev.shape
+
 cnn_model = "cnn_dropout"
 
 with tf.Graph().as_default():

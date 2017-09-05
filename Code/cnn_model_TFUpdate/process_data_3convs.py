@@ -1,15 +1,18 @@
 from padding import max_commit_file, padding_file
 import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer
+from padding import input_path_maxtext_maxcode_maxline_mapping
 
 
-def input_stable_path(options):
+def input_stable_path(options, maxtext, maxcode, maxline):
     paths = []
+    line = ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode) + ".maxline" + str(maxline)
     if options == "eq":
-        paths.append("../preprocessing_twoconvlayers/eq100_line_aug1.out.stable.maxtext175.maxcode250")
+        paths.append("../preprocessing_twoconvlayers/eq100_line_aug1.out.stable" + line)
     elif options == "extra":
-        paths.append("../preprocessing_twoconvlayers/extra100_line_aug1.out.stable.maxtext175.maxcode250")
+        paths.append("../preprocessing_twoconvlayers/extra100_line_aug1.out.stable" + line)
     elif options == "lbd":
-        paths.append("../preprocessing_twoconvlayers/lbd100_line_aug1.out.stable.maxtext175.maxcode250")
+        paths.append("../preprocessing_twoconvlayers/lbd100_line_aug1.out.stable" + line)
     else:
         print "Wrong options"
         exit()
@@ -26,33 +29,35 @@ def len_path_data(options):
     return length
 
 
-def input_path_data(options):
+def input_path_data(options, maxtext, maxcode, maxline):
     paths = []
+    line = ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode) + ".maxline" + str(maxline)
     if options == "msg":
-        paths.append("../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250.msg.input")
+        paths.append("../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1" + line + ".input")
     elif options == "addedcode":
         paths.append(
-            "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250.addedcode.input")
+            "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1" + line + ".input")
     elif options == "removedcode":
         paths.append(
-            "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext175.maxcode250.removedcode.input")
+            "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1" + line + ".input")
     else:
         print "Your options are wrong, please retype again"
         exit()
     return paths[0]
 
 
-def input_path_codefile(options):
+def input_path_codefile(options, maxtext, maxcode, maxline):
     paths = []
+    line = ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode) + ".maxline" + str(maxline)
     if options == "eq":
         paths.append(
-            "../preprocessing_twoconvlayers/eq100_line_aug1.out.codefile.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/eq100_line_aug1.out.codefile" + line + ".mapping")
     elif options == "extra":
         paths.append(
-            "../preprocessing_twoconvlayers/extra100_line_aug1.out.codefile.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/extra100_line_aug1.out.codefile" + line + ".mapping")
     elif options == "lbd":
         paths.append(
-            "../preprocessing_twoconvlayers/eq100_line_aug1.out.codefile.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/lbd100_line_aug1.out.codefile" + line + ".mapping")
     else:
         print "Your options are wrong, please retype again"
         exit()
@@ -61,19 +66,27 @@ def input_path_codefile(options):
 
 def read_input_codefile(options):
     if options == "eq" or options == "extra" or options == "lbd":
-        print "hello"
+        path = input_path_codefile(options=options)
+        codefile = list(open(path, "r").readlines())
+        return [c.split("\t")[1] for c in codefile]
     else:
         print "Your options are wrong, please retype again"
         exit()
 
 
 def read_input_codefile_all():
-    print "hello"
+    eq_codefile = read_input_codefile(options="eq")
+    extra_codefile = read_input_codefile(options="extra")
+    lbd_codefile = read_input_codefile(options="lbd")
+    codefile = eq_codefile + extra_codefile + lbd_codefile
+    vec = CountVectorizer()
+    data = vec.fit_transform(codefile).toarray()
+    return data
 
 
-def read_input_data(options):
+def read_input_data(options, maxtext, maxcode, maxline):
     if options == "msg":
-        path = input_path_data(options=options)
+        path = input_path_data(options=options, maxtext=maxtext, maxcode=maxcode, maxline=maxline)
         msg = list(open(path, "r").readlines())
         msg = np.array([np.array(map(int, line.split())) for line in msg])
         return msg
@@ -111,10 +124,13 @@ def write_file_special(new_file, info, options):
         exit()
 
 
-def finding_max_commit():
-    maxlen_msg_eq, maxlen_code_eq, maxline_code_eq, maxlen_file_eq = max_commit_file(options="eq")
-    maxlen_msg_extra, maxlen_code_extra, maxline_code_extra, maxlen_file_extra = max_commit_file(options="extra")
-    maxlen_msg_lbd, maxlen_code_lbd, maxline_code_lbd, maxlen_file_lbd = max_commit_file(options="lbd")
+def finding_max_commit(maxtext, maxcode, maxline):
+    maxlen_msg_eq, maxlen_code_eq, maxline_code_eq, maxlen_file_eq = max_commit_file(
+        options="eq", maxtext=maxtext, maxcode=maxcode, maxline=maxline)
+    maxlen_msg_extra, maxlen_code_extra, maxline_code_extra, maxlen_file_extra = max_commit_file(
+        options="extra", maxtext=maxtext, maxcode=maxcode, maxline=maxline)
+    maxlen_msg_lbd, maxlen_code_lbd, maxline_code_lbd, maxlen_file_lbd = max_commit_file(
+        options="lbd", maxtext=maxtext, maxcode=maxcode, maxline=maxline)
 
     return max(maxlen_msg_eq, maxlen_msg_extra, maxlen_msg_lbd), \
            max(maxlen_code_eq, maxlen_code_extra, maxlen_code_lbd), \
@@ -127,17 +143,24 @@ def get_padding(pad):
     return [p.split("\t")[1:] for p in pad]
 
 
-def padding_commit():
-    maxlen_msg, maxlen_commitcode, maxline_commitcode, maxlen_file = finding_max_commit()
+def padding_commit(maxtext, maxcode, maxline):
+    maxlen_msg, maxlen_commitcode, maxline_commitcode, maxlen_file = finding_max_commit(maxtext, maxcode, maxline)
     print maxlen_msg, maxlen_commitcode, maxline_commitcode, maxlen_file
 
-    pad_msg_eq, pad_addedcode_eq, pad_removedcode_eq = padding_file(options="eq", maxlen_msg=maxlen_msg,
+    paths = input_path_maxtext_maxcode_maxline_mapping(options="eq", maxtext=maxtext, maxcode=maxcode, maxline=maxline)
+    pad_msg_eq, pad_addedcode_eq, pad_removedcode_eq = padding_file(paths=paths, maxlen_msg=maxlen_msg,
                                                                     maxlen_code=maxlen_commitcode,
                                                                     maxline_code=maxline_commitcode)
-    pad_msg_extra, pad_addedcode_extra, pad_removedcode_extra = padding_file(options="extra", maxlen_msg=maxlen_msg,
+
+    paths = input_path_maxtext_maxcode_maxline_mapping(options="extra", maxtext=maxtext,
+                                                       maxcode=maxcode, maxline=maxline)
+    pad_msg_extra, pad_addedcode_extra, pad_removedcode_extra = padding_file(paths=paths, maxlen_msg=maxlen_msg,
                                                                              maxlen_code=maxlen_commitcode,
                                                                              maxline_code=maxline_commitcode)
-    pad_msg_lbd, pad_addedcode_lbd, pad_removedcode_lbd = padding_file(options="lbd", maxlen_msg=maxlen_msg,
+
+    paths = input_path_maxtext_maxcode_maxline_mapping(options="lbd", maxtext=maxtext,
+                                                       maxcode=maxcode, maxline=maxline)
+    pad_msg_lbd, pad_addedcode_lbd, pad_removedcode_lbd = padding_file(paths=paths, maxlen_msg=maxlen_msg,
                                                                        maxlen_code=maxlen_commitcode,
                                                                        maxline_code=maxline_commitcode)
     print len(pad_msg_eq), len(pad_msg_extra), len(pad_msg_lbd)
@@ -220,3 +243,24 @@ def build_input_data(sentences, options, vocab, maxinput):
 # removeded_code = build_input_data(sentences=pad_removedcode, options="code", vocab=vocab_code,
 #                                   maxinput=len(pad_removedcode))
 # write_file_special(new_file=filename + ".removed" + options + ".input", info=removeded_code, options=options)
+
+#################################################################################################################
+#################################################################################################################
+maxtext, maxcode, maxline = 175, 250, 20
+filename = "../preprocessing_twoconvlayers/eq100_extra100_lbd100_line_aug1.maxtext" \
+           + str(maxtext) + ".maxcode" + str(maxcode) + ".maxline" + str(maxline)
+pad_msg, pad_addedcode, pad_removedcode = padding_commit(maxtext, maxcode, maxline)
+options = "msg"
+vocab_msg = build_vocab(sentences=pad_msg, options=options)
+write_file_normal(new_file=filename + "." + options + ".dict", info=vocab_msg)
+msg = build_input_data(sentences=pad_msg, options=options, vocab=vocab_msg, maxinput=len(pad_msg))
+write_file_special(new_file=filename + "." + options + ".input", info=msg, options=options)
+
+options = "code"
+vocab_code = build_vocab(sentences=pad_addedcode + pad_removedcode, options=options)
+write_file_normal(new_file=filename + "." + options + ".dict", info=vocab_code)
+added_code = build_input_data(sentences=pad_addedcode, options=options, vocab=vocab_code, maxinput=len(pad_addedcode))
+write_file_special(new_file=filename + ".added" + options + ".input", info=added_code, options=options)
+removeded_code = build_input_data(sentences=pad_removedcode, options="code", vocab=vocab_code,
+                                  maxinput=len(pad_removedcode))
+write_file_special(new_file=filename + ".removed" + options + ".input", info=removeded_code, options=options)

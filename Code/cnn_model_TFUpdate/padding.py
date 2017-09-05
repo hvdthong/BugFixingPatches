@@ -28,33 +28,34 @@ def input_path_maxtext_maxcode_mapping(options):
     return paths
 
 
-def input_path_maxtext_maxcode_maxline_mapping(options):
+def input_path_maxtext_maxcode_maxline_mapping(options, maxtext, maxcode, maxline):
     paths = []
+    line = ".maxtext" + str(maxtext) + ".maxcode" + str(maxcode) + ".maxline" + str(maxline)
     if options == "eq":
-        paths.append("../preprocessing_twoconvlayers/eq100_line_aug1.out.msg.maxtext175.maxcode250.maxline30.mapping")
+        paths.append("../preprocessing_twoconvlayers/eq100_line_aug1.out.msg" + line + ".mapping")
         paths.append(
-            "../preprocessing_twoconvlayers/eq100_line_aug1.out.addedcode.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/eq100_line_aug1.out.addedcode" + line + ".mapping")
         paths.append(
-            "../preprocessing_twoconvlayers/eq100_line_aug1.out.removedcode.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/eq100_line_aug1.out.removedcode" + line + ".mapping")
         paths.append(
-            "../preprocessing_twoconvlayers/eq100_line_aug1.out.codefile.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/eq100_line_aug1.out.codefile" + line + ".mapping")
     elif options == "extra":
         paths.append(
-            "../preprocessing_twoconvlayers/extra100_line_aug1.out.msg.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/extra100_line_aug1.out.msg" + line + ".mapping")
         paths.append(
-            "../preprocessing_twoconvlayers/extra100_line_aug1.out.addedcode.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/extra100_line_aug1.out.addedcode" + line + ".mapping")
         paths.append(
-            "../preprocessing_twoconvlayers/extra100_line_aug1.out.removedcode.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/extra100_line_aug1.out.removedcode" + line + ".mapping")
         paths.append(
-            "../preprocessing_twoconvlayers/extra100_line_aug1.out.codefile.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/extra100_line_aug1.out.codefile" + line + ".mapping")
     elif options == "lbd":
-        paths.append("../preprocessing_twoconvlayers/lbd100_line_aug1.out.msg.maxtext175.maxcode250.maxline30.mapping")
+        paths.append("../preprocessing_twoconvlayers/lbd100_line_aug1.out.msg" + line + ".mapping")
         paths.append(
-            "../preprocessing_twoconvlayers/lbd100_line_aug1.out.addedcode.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/lbd100_line_aug1.out.addedcode" + line + ".mapping")
         paths.append(
-            "../preprocessing_twoconvlayers/lbd100_line_aug1.out.removedcode.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/lbd100_line_aug1.out.removedcode" + line + ".mapping")
         paths.append(
-            "../preprocessing_twoconvlayers/lbd100_line_aug1.out.codefile.maxtext175.maxcode250.maxline30.mapping")
+            "../preprocessing_twoconvlayers/lbd100_line_aug1.out.codefile" + line + ".mapping")
     else:
         print "You select wrong options"
         exit()
@@ -133,8 +134,8 @@ def max_commit_all():
            max(maxline_addedcode, maxline_removedcode), maxlen_codefile
 
 
-def max_commit_file(options):
-    paths = input_path_maxtext_maxcode_maxline_mapping(options)
+def max_commit_file(options, maxtext, maxcode, maxline):
+    paths = input_path_maxtext_maxcode_maxline_mapping(options, maxtext, maxcode, maxline)
     msg_path, addedcode_path, removedcode_path, codefile_path = paths[0], paths[1], paths[2], paths[3]
     maxlen_msg = max_commit_message_codefile(msg_path)
     print "Max length in commit messages with %s:%i" % (options, maxlen_msg)
@@ -198,8 +199,7 @@ def padding_code(path_file, maxlen_code, maxline_code):
     return pad_codes
 
 
-def padding_file(options, maxlen_msg, maxlen_code, maxline_code):
-    paths = input_path_maxtext_maxcode_maxline_mapping(options)
+def padding_file(paths, maxlen_msg, maxlen_code, maxline_code):
     msg_path, addedcode_path, removedcode_path, codefile_path = paths[0], paths[1], paths[2], paths[3]
     pad_msg = padding_msg(path_file=msg_path, max_len=maxlen_msg)
     pad_addedcode = padding_code(path_file=addedcode_path, maxlen_code=maxlen_code, maxline_code=maxline_code)
